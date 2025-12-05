@@ -1,7 +1,11 @@
 package implementations;
 
-public class BSTreeNode<E>
+import java.io.Serializable;
+
+public class BSTreeNode<E extends Comparable<? super E>> implements Serializable
 {
+	private static final long serialVersionUID = 1L;
+	
 	E data;
 	BSTreeNode<E> left;
 	BSTreeNode<E> right;
