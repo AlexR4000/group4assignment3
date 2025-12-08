@@ -1,13 +1,8 @@
 package appDomain;
 
-import java.io.File;
-
-import utilities.Utils;
-
 public class AppDriver {
 	public static void main(String[] fakearg) {
-		String[] args = {"java", "-jar" , "WordTracker.jar" , "test1.txt" , "-pf", "-foutput.txt "};
-		File file = null;
+		String[] args = {"java", "-jar" , "WordTracker.jar" , "test2.txt" , "-pf", "-foutput.txt "};
 		WordTracker wordTracker = new WordTracker();
 		
 		if (args == null || args.length == 0) return;
@@ -35,11 +30,10 @@ public class AppDriver {
             }
             
             if (lower.endsWith("txt") || !lower.startsWith("-f")) {
-            	file = Utils.check(lower);
             	
             	wordTracker.loadTree();
             	
-            	wordTracker.constructsFromFile(file);
+            	wordTracker.constructsFromFile(lower);
             	
             	wordTracker.saveTree();
             }

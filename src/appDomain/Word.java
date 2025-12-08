@@ -26,6 +26,10 @@ public class Word implements Comparable<Word>, Serializable{
 		occurrences.get(filename).add(lineNumber);
 	}
 	
+	public void removeOccurrences(String fileName) {
+		occurrences.remove(fileName);
+	}
+	
 	public Map<String,ArrayList<Integer>> getOccurrences(){
 		return occurrences;
 	}
@@ -53,9 +57,9 @@ public class Word implements Comparable<Word>, Serializable{
         StringBuilder sb = new StringBuilder(word + ": ");
         for (String file : occurrences.keySet()) {
             ArrayList<Integer> lines = occurrences.get(file);
-            sb.append("\n   ").append(file)
-              .append(" -> ").append(lines)
-              .append(" (freq ").append(lines.size()).append(")");
+            sb.append("   ").append(file)
+              .append(" -> ")
+              .append(" (").append(lines.size()).append(" times) ").append(lines);
         }
         return sb.toString();
     }
