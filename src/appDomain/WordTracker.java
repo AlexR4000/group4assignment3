@@ -8,12 +8,22 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.PrintStream;
+import java.util.ArrayList;
 
 import implementations.BSTree;
 import implementations.BSTreeNode;
 import utilities.Iterator;
 import utilities.Utils;
 
+/**
+ * WordTracker manages the BST index of Word objects. It can read a text file,
+ * record occurrences per (filename -> list of line numbers), persist the tree,
+ * and generate reports in three modes:
+ *  - pf : files only
+ *  - pl : files + lines
+ *  - po : files + lines + frequency
+ */
 public class WordTracker {
 	BSTree<Word> tree = new BSTree<>();
 	int counter = 0;
@@ -21,11 +31,14 @@ public class WordTracker {
 	File file = null;
 	
 	public void constructsFromFile(String fileName) {
+//		this.fileName = fileName;
 		file = Utils.check(fileName);
 		
 		clearOccurrencesForFile(fileName);
 		
 		if (file == null) return;
+		
+		counter = 0;
 		
 		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
 
@@ -115,5 +128,27 @@ public class WordTracker {
 	        w.removeOccurrences(fileName); 
 	    }
 	}
+	
+    public void generateReport(String mode, PrintStream out) {
+        if (mode == null || out == null) return;
+        Iterator<Word> it = tree.inorderIterator();
 
+        while (it.hasNext()) {
+            Word w = it.next();
+            switch (mode) {
+                case "pf":
+                    out.println(w.toPrintFilesOnly());
+                    break;
+                case "pl":
+                    out.println(w.toPrintFilesAndLines());
+                    break;
+                case "po":
+                    out.println(w.toPrintFilesLinesFrequency());
+                    break;
+                default:
+                    out.println("Unknown report mode: " + mode);
+                    return;
+            }
+        }
+	}
 }
