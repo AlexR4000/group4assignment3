@@ -9,8 +9,11 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import implementations.BSTree;
+import utilities.Iterator;
+
 public class WordTracker {
-	BSTtam tree = new BSTtam();
+	BSTree<Word> tree = new BSTree<>();
 	
 	public void constructsFromFile(File file) {
 		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
@@ -21,27 +24,31 @@ public class WordTracker {
                 line = line.trim();
                 
                 //read each word in the line
-                for (String word : line.split(" ")) {
-                	word = word.replaceAll("[\\p{Punct}]", "");
+                for (String w : line.split(" ")) {
+                	w = w.replaceAll("[\\p{Punct}]", "");
+                	
+                	Word word = new Word(w);
                 	
                 	//if the tree already contains the same word, skip
-                	if (tree.find(word)) {
+                	if (tree.contains(word)) {
                 		continue;
                 	}
                 	
-                	tree.insert(word);
+                	tree.add(word);
                 }
             }
             
-            tree.display();
+            Iterator<Word> i = tree.inorderIterator();
+            
+            while (i.hasNext()) System.out.println(i.next().getWord());
         } catch (IOException e) {
             e.printStackTrace();
         }
 	}
 	
-	public BSTtam loadTree() {
+	public BSTree<Word> loadTree() {
 		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("repository.ser"))) {
-			tree = (BSTtam) ois.readObject();
+			tree = (BSTree<Word>) ois.readObject();
 			System.out.println("Tree loaded from repository.ser\n");
 			return tree;
 		} catch (IOException | ClassNotFoundException e) {

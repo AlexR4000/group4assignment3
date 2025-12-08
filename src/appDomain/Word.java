@@ -13,7 +13,7 @@ public class Word implements Comparable<Word>, Serializable{
 	private Map<String, ArrayList<Integer>> occurrences;
 	
 	public Word (String word) {
-		this.word = word.toLowerCase();
+		this.word = word;
         this.occurrences = new HashMap<>();
 	}
 	
@@ -32,7 +32,7 @@ public class Word implements Comparable<Word>, Serializable{
 
 	@Override
 	public int compareTo(Word arg0) {
-		return this.word.compareTo(arg0.word);
+		return this.word.toLowerCase().compareTo(arg0.word.toLowerCase());
 	}
 	
 	//Prints
