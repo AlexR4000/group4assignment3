@@ -11,23 +11,23 @@ import java.io.PrintStream;
  * WordTracker process.
  */
 public class AppDriver {
-	public static void main(String[] fakearg) {
-		String[] args = {"java", "-jar" , "WordTracker.jar" , "test2.txt" , "-pf", "-foutput.txt "};
-		WordTracker wordTracker = new WordTracker();
-		
-		if (args == null || args.length == 0) return;
-		
+	public static void main(String[] args) {
+//		String[] args = {"java", "-jar" , "WordTracker.jar" , "test2.txt" , "-pf", "-foutput.txt "};
+		if (args == null || args.length == 0) {
+            System.out.println("Usage: java -jar WordTracker.jar <input.txt> -pf|-pl|-po [-f <output.txt>]");
+            return;
+        }
+
 		String inputFile = null;
-		String reportFlag = null;
+		String modeFlag = null;
 		String outputFile = null;
 
 		for (int i = 0; i < args.length; i++) {
-            String raw = args[i];
-            if (raw == null) continue;
-            String arg = raw.trim();
+            if (args[i] == null) continue;
+            String token = args[i].trim();
 
             // Normalize special characters to avoid parsing issues
-            arg = arg.replace('–', '-')        // long dash
+            token = token.replace('–', '-')        // long dash
                      .replace('—', '-')        // em dash
                      .replace("\"", "")        // remove quotes
                      .replace("“", "")
@@ -35,7 +35,7 @@ public class AppDriver {
                      .trim()
                      .replace("\\", "/");      // unify slashes
 
-            String lower = arg.toLowerCase();
+            String lower = token.toLowerCase();
 
             // Ignore arguments related to Java execution itself
             if (lower.equals("java") || lower.equals("-jar") || lower.endsWith(".jar")) {
@@ -44,33 +44,31 @@ public class AppDriver {
             
             // report flags
             if (lower.equals("-pf") || lower.equals("-pl") || lower.equals("-po")) {
-                reportFlag = lower;
+            	modeFlag = lower;
                 continue;
             }
             
-            // -foutput.txt (no space)
-            if (lower.startsWith("-f") && lower.length() > 2) {
-                outputFile = raw.substring(2); // preserve original casing/path characters
-                continue;
-            }
-            
-            // -f output.txt (separate)
-            if (lower.equals("-f")) {
-                if (i + 1 < args.length) {
-                    outputFile = args[i + 1];
-                    i++; // skip next token
+         // -foutput.txt or -f output.txt
+            if (lower.startsWith("-f")) {
+                if (lower.length() > 2) {
+                    outputFile = token.substring(2);
+                } else {
+                    // token is exactly "-f", look ahead
+                    if (i + 1 < args.length) {
+                        outputFile = args[++i];
+                    }
                 }
                 continue;
             }
             
          // anything that looks like a filename (not starting with -) is input
             if (!lower.startsWith("-") && inputFile == null) {
-                inputFile = raw;
+                inputFile = token;
                 continue;
             }
         }
             
-            if (inputFile == null || reportFlag == null) {
+            if (inputFile == null || modeFlag == null) {
                 System.out.println("Missing required arguments.");
                 System.out.println("Usage: java -jar WordTracker.jar <input.txt> -pf|-pl|-po [-f<output.txt>]");
                 return;
@@ -89,13 +87,12 @@ public class AppDriver {
             boolean toFile = false;
             try {
                 if (outputFile != null && !outputFile.trim().isEmpty()) {
-                    File outFile = new File(outputFile.trim());
-                    out = new PrintStream(new FileOutputStream(outFile, false), true);
+                    out = new PrintStream(new FileOutputStream(outputFile, false), true);
                     toFile = true;
                 }
                 
              // generate the chosen report
-                switch (reportFlag) {
+                switch (modeFlag) {
                     case "-pf":
                         tracker.generateReport("pf", out);
                         break;
@@ -107,9 +104,11 @@ public class AppDriver {
                         break;
                     default:
                         System.out.println("Unknown report flag.");
+                        break;
                 }
             } catch (FileNotFoundException e) {
                 System.out.println("Unable to open output file: " + e.getMessage());
+                e.printStackTrace();
             } finally {
                 if (toFile && out != null) out.close();
             }

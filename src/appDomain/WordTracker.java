@@ -10,6 +10,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.List;
 
 import implementations.BSTree;
 import implementations.BSTreeNode;
@@ -25,32 +26,43 @@ import utilities.Utils;
  *  - po : files + lines + frequency
  */
 public class WordTracker {
+	private static final String REPO_FILE = "repository.ser";
+	
 	BSTree<Word> tree = new BSTree<>();
 	int counter = 0;
 	String fileName = null;
 	File file = null;
 	
 	public void constructsFromFile(String fileName) {
-//		this.fileName = fileName;
+		this.fileName = fileName;
 		file = Utils.check(fileName);
 		
-		clearOccurrencesForFile(fileName);
-		
-		if (file == null) return;
+		if (file == null) {
+            System.out.println("Could not locate file: " + fileName);
+            return;
+        }
 		
 		counter = 0;
 		
+		clearOccurrencesForFile(fileName);
+		
 		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
 
-            String line = null;
+            String line;
 
             while ((line = br.readLine()) != null) {
-                line = line.trim();
                 counter++;
+                line = line.trim();
+                if (line.isEmpty()) continue;
                 
                 //read each word in the line
-                for (String w : line.split(" ")) {
-                	w = w.replaceAll("[\\p{Punct}]", "");
+             // split on whitespace, not just single space (handles tabs/multiple spaces)
+                String[] tokens = line.split(" ");
+                for (String rawToken : tokens) {
+                    if (rawToken == null) continue;
+                    // Remove punctuation at ends and in the middle (keeps letters/digits)
+                    String w = rawToken.replaceAll("[\\p{Punct}]", "").trim();
+                    if (w.isEmpty()) continue;
                 	
                 	Word word = new Word(w);
                 	word.addOccurrences(fileName, counter);
@@ -67,12 +79,19 @@ public class WordTracker {
                 }
             }
         } catch (IOException e) {
+        	System.err.println("Error while reading file " + fileName + ": " + e.getMessage());
             e.printStackTrace();
         }
 	}
 	
 	public BSTree<Word> loadTree() {
-	    try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("repository.ser"))) {
+		File repo = new File(REPO_FILE);
+        if (!repo.exists()) {
+            System.out.println("Repository file not found; starting with an empty tree.");
+            return null;
+        }
+        
+	    try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(repo))) {
 
 	        Object obj = ois.readObject();
 
@@ -92,10 +111,9 @@ public class WordTracker {
 	            }
 	        }
 
-	        tree = (BSTree<Word>) rawTree;
-
+	        this.tree = (BSTree<Word>) rawTree;
 	        System.out.println("Tree loaded from repository.ser\n");
-	        return tree;
+	        return this.tree;
 
 	    } catch (IOException e) {
 	        System.out.println("File not found: " + e.getMessage() +"\n");
@@ -109,16 +127,16 @@ public class WordTracker {
 	public void saveTree() {
 	    try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("repository.ser"))) {
 	        oos.writeObject(tree);
-	        
-	        System.out.println("\nTree saved to repository.ser");
+	        System.out.println("\nTree saved to " + REPO_FILE);
 	    } catch (IOException e) {
+	    	System.err.println("Error saving repository: " + e.getMessage());
 	        e.printStackTrace();
 	    }
 	}
 	
 	private void clearOccurrencesForFile(String fileName) {
+		if (tree == null) return;
 	    Iterator<Word> it = tree.inorderIterator();
-	    
 	    while (it.hasNext()) {
 	        Word w = it.next();
 	        w.removeOccurrences(fileName); 
@@ -126,7 +144,11 @@ public class WordTracker {
 	}
 	
     public void generateReport(String mode, PrintStream out) {
-        if (mode == null || out == null) return;
+    	if (tree == null) {
+            out.println("No repository loaded.");
+            return;
+        }
+    	
         Iterator<Word> it = tree.inorderIterator();
 
         while (it.hasNext()) {
