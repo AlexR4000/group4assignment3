@@ -66,10 +66,6 @@ public class WordTracker {
                 	tree.add(word);
                 }
             }
-            
-            Iterator<Word> i = tree.inorderIterator();
-            
-            while (i.hasNext()) System.out.println(i.next().toPrintFilesLinesFrequency());
         } catch (IOException e) {
             e.printStackTrace();
         }
