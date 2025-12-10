@@ -18,12 +18,27 @@ import utilities.Iterator;
 import utilities.Utils;
 
 /**
- * WordTracker manages the BST index of Word objects. It can read a text file,
- * record occurrences per (filename -> list of line numbers), persist the tree,
- * and generate reports in three modes:
- *  - pf : files only
- *  - pl : files + lines
- *  - po : files + lines + frequency
+ * Manages a repository of {@link Word} objects stored inside a {@link BSTree}.
+ *
+ * <p>
+ * Responsibilities:
+ * <ul>
+ *   <li>Load a previously serialized BST repository from {@code repository.ser}.</li>
+ *   <li>Read an input text file and add/update Word entries with occurrences (filename -> list of line numbers).</li>
+ *   <li>Persist the BST back to {@code repository.ser}.</li>
+ *   <li>Generate reports in three modes:
+ *       <ul>
+ *         <li>{@code pf} — prints words and filenames only</li>
+ *         <li>{@code pl} — prints words with filenames and line numbers</li>
+ *         <li>{@code po} — prints words with filenames, line numbers and frequency</li>
+ *       </ul>
+ *   </li>
+ * </ul>
+ * </p>
+ *
+ * <p>The class uses {@link utilities.Utils#check(String)} to locate files robustly
+ * in common development/execution environments (working directory, res folder,
+ * or JAR directory).</p>
  */
 public class WordTracker {
 	private static final String REPO_FILE = "repository.ser";
@@ -33,6 +48,16 @@ public class WordTracker {
 	String fileName = null;
 	File file = null;
 	
+	/**
+     * Reads {@code fileName}, tokenizes lines into words (stripping punctuation),
+     * and updates the BST with occurrences (per-filename line numbers).
+     *
+     * <p>If {@code fileName} was previously processed, all prior occurrences for
+     * that filename are cleared first (so repeated runs update the repository,
+     * rather than duplicating entries).</p>
+     *
+     * @param fileName path to the input text file to scan
+     */
 	public void constructsFromFile(String fileName) {
 		this.fileName = fileName;
 		file = Utils.check(fileName);
@@ -84,6 +109,20 @@ public class WordTracker {
         }
 	}
 	
+	/**
+     * Loads the repository tree from {@code repository.ser} if it exists.
+     *
+     * <p>The method performs a couple of safety checks:
+     * <ul>
+     *   <li>Verifies the deserialized object is a {@code BSTree}.</li>
+     *   <li>If the tree has elements, verifies the element type is {@code Word}.</li>
+     * </ul>
+     * If the file is missing, corrupted, or types don't match, the method returns {@code null}
+     * and the tracker continues with an empty tree.
+     * </p>
+     *
+     * @return the loaded {@link BSTree} or null if not loaded
+     */
 	public BSTree<Word> loadTree() {
 		File repo = new File(REPO_FILE);
         if (!repo.exists()) {
@@ -124,6 +163,11 @@ public class WordTracker {
 	    }
 	}
 	
+	/**
+     * Serializes the current BST to {@code repository.ser}.
+     *
+     * <p>Any IOException will be printed to standard error.</p>
+     */
 	public void saveTree() {
 	    try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("repository.ser"))) {
 	        oos.writeObject(tree);
@@ -134,6 +178,13 @@ public class WordTracker {
 	    }
 	}
 	
+	/**
+     * Remove any recorded occurrences for the supplied filename across all Words
+     * in the current tree. This is used so that rescanning a file will not cause
+     * duplicated line records.
+     *
+     * @param fileName filename whose occurrences should be cleared
+     */
 	private void clearOccurrencesForFile(String fileName) {
 		if (tree == null) return;
 	    Iterator<Word> it = tree.inorderIterator();
@@ -143,6 +194,12 @@ public class WordTracker {
 	    }
 	}
 	
+	/**
+     * Generate a report of the repository using the given output stream.
+     *
+     * @param mode either "pf", "pl", or "po" (files only / files+lines / files+lines+frequency)
+     * @param out  the PrintStream to write the report to (e.g. {@code System.out} or a file stream)
+     */
     public void generateReport(String mode, PrintStream out) {
     	if (tree == null) {
             out.println("No repository loaded.");

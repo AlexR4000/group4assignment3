@@ -6,11 +6,47 @@ import java.io.FileOutputStream;
 import java.io.PrintStream;
 
 /**
- * Application entry point. Parses command-line arguments (input file,
- * report option -pf/-pl/-po, optional -f output file) and runs the
- * WordTracker process.
+ * Application entry point for the WordTracker program.
+ *
+ * <p>
+ * Expected usage:
+ * <pre>
+ * java -jar WordTracker.jar &lt;input.txt&gt; -pf|-pl|-po [-f &lt;output.txt&gt;]
+ * </pre>
+ * where:
+ * <ul>
+ *   <li>{@code -pf} prints words with filenames only</li>
+ *   <li>{@code -pl} prints words with filenames and line numbers</li>
+ *   <li>{@code -po} prints words with filenames, line numbers and frequency</li>
+ *   <li>{@code -f &lt;output.txt&gt;} optionally redirects the report to the given file</li>
+ * </ul>
+ * </p>
+ *
+ * <p>
+ * The main method parses command-line arguments, loads the persistent tree
+ * (if present), updates it from the provided input file, saves the tree back
+ * to disk, and prints the requested report either to standard output or to a
+ * specified output file.
+ * </p>
  */
 public class AppDriver {
+	
+	/**
+     * Program entry point.
+     *
+     * <p>
+     * This method parses the command line for:
+     * <ul>
+     *   <li>input filename (first token that does not start with "-")</li>
+     *   <li>report flag: {@code -pf}, {@code -pl} or {@code -po}</li>
+     *   <li>optional output directive: {@code -foutput.txt} or {@code -f output.txt}</li>
+     * </ul>
+     * It then runs the WordTracker load/construct/save cycle and prints the requested
+     * report to either {@code System.out} or the user-specified file.
+     * </p>
+     *
+     * @param args command-line arguments as described above
+     */
 	public static void main(String[] args) {
 //		String[] args = {"java", "-jar" , "WordTracker.jar" , "test2.txt" , "-pf", "-foutput.txt "};
 		if (args == null || args.length == 0) {
