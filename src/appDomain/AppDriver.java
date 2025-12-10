@@ -1,6 +1,5 @@
 package appDomain;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
@@ -48,7 +47,6 @@ public class AppDriver {
      * @param args command-line arguments as described above
      */
 	public static void main(String[] args) {
-//		String[] args = {"java", "-jar" , "WordTracker.jar" , "test2.txt" , "-pf", "-foutput.txt "};
 		if (args == null || args.length == 0) {
             System.out.println("Usage: java -jar WordTracker.jar <input.txt> -pf|-pl|-po [-f <output.txt>]");
             return;
@@ -116,7 +114,6 @@ public class AppDriver {
         	
         	tracker.constructsFromFile(inputFile);
         	
-        	tracker.saveTree();
         	
         	// Prepare output stream: either System.out or a file
             PrintStream out = System.out;
@@ -146,7 +143,11 @@ public class AppDriver {
                 System.out.println("Unable to open output file: " + e.getMessage());
                 e.printStackTrace();
             } finally {
-                if (toFile && out != null) out.close();
+                if (toFile && out != null) {
+                	out.close();
+                	System.out.println("Exported to "+ outputFile);                	
+                }
+                tracker.saveTree();
             }
 	}
 }

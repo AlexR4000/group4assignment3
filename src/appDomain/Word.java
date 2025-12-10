@@ -46,9 +46,9 @@ public class Word implements Comparable<Word>, Serializable{
     }
 	
 	public String toPrintFilesAndLines() {
-		StringBuilder sb = new StringBuilder(word + ": ");
+		StringBuilder sb = new StringBuilder(word + " : ");
         for (String file : occurrences.keySet()) {
-            sb.append("\n   ").append(file).append(" -> ").append(occurrences.get(file));
+            sb.append("   ").append(file).append(" -> ").append(occurrences.get(file));
         }
         return sb.toString();
 	}
